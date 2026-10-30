@@ -1,3 +1,7 @@
+import { DogPhoto } from './dog-photo';
+import { useSurfaceFocus } from './hooks/use-surface-focus';
+import { moveWindowByKey, arrangeDesktop } from './hooks/use-window-drag';
+import { MotionToggle } from './motion-settings';
 import type { Dispatch, RefObject, SetStateAction } from 'react';
 import {
   LinkedinLogoIcon,
@@ -104,6 +108,17 @@ export function DesktopWorkspace({
   moveWindow,
   endWindowDrag,
 }: DesktopWorkspaceProps) {
+  function focusWindow(ref: RefObject<HTMLElement | null>) {
+    const heading = ref.current?.querySelector<HTMLElement>('h1, h2');
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    }
+  }
+  useSurfaceFocus(projectWindow, selected?.id ?? null, '.desktop-icon');
+  useSurfaceFocus(fileWindow, openFile, '.start-icon');
+  useSurfaceFocus(dogWindow, dogOpen ? 'dog' : null, '.desktop-dock-pet');
+  useSurfaceFocus(startWindow, startOpen ? 'welcome' : null, '.start-icon');
   return (
     <main
       className="desktop"
@@ -126,7 +141,18 @@ export function DesktopWorkspace({
         document.querySelector('.custom-cursor')?.classList.remove('is-pressed')
       }
       onKeyDown={(event) => {
-        if (event.key === 'Escape') setStartMenuOpen(false);
+        if (event.key !== 'Escape' || event.defaultPrevented) return;
+        if (startMenuOpen) {
+          setStartMenuOpen(false);
+          return;
+        }
+        if (dogOpen) {
+          setDogOpen(false);
+          return;
+        }
+        if (focusedWindow === 'project' && selected) setSelected(null);
+        else if (openFile && focusedWindow === openFile) setOpenFile(null);
+        else if (startOpen) setStartOpen(false);
       }}
     >
       {bootStage !== 'ready' && (
@@ -265,10 +291,6 @@ export function DesktopWorkspace({
         <>
           <div className="wallpaper-copy" aria-hidden="true">
             MOBILE DEVELOPER
-            <br />
-            INTERFACE BUILDER
-            <br />
-            CURIOUS HUMAN
           </div>
           <section className="identity" aria-label="Introduction">
             <AnimatedHeadline lines={['Darren Potts.', 'Developer.']} />
@@ -318,15 +340,21 @@ export function DesktopWorkspace({
       {startOpen && (
         <section
           ref={startWindow}
+          tabIndex={-1}
           className={`window start-window ${focusedWindow === 'welcome' ? 'is-focused' : ''}`}
           aria-labelledby="start-title"
+          onFocus={() => setFocusedWindow('welcome')}
           onPointerDown={() => setFocusedWindow('welcome')}
         >
           <header
             className="window-drag-handle"
+            tabIndex={0}
+            aria-label="Window title bar. Use arrow keys to move this window."
+            onKeyDown={moveWindowByKey}
             onPointerDown={(event) => beginWindowDrag(event, 'start')}
             onPointerMove={(event) => moveWindow(event, 'start', startWindow)}
             onPointerUp={(event) => endWindowDrag(event, 'start')}
+            onPointerCancel={(event) => endWindowDrag(event, 'start')}
           >
             <span>WELCOME.txt</span>
             <button
@@ -360,15 +388,21 @@ export function DesktopWorkspace({
         <section
           key={selected.id}
           ref={projectWindow}
+          tabIndex={-1}
           className={`window project-window ${focusedWindow === 'project' ? 'is-focused' : ''}`}
           aria-labelledby="project-title"
+          onFocus={() => setFocusedWindow('project')}
           onPointerDown={() => setFocusedWindow('project')}
         >
           <header
             className="window-drag-handle"
+            tabIndex={0}
+            aria-label="Window title bar. Use arrow keys to move this window."
+            onKeyDown={moveWindowByKey}
             onPointerDown={(event) => beginWindowDrag(event, 'project')}
             onPointerMove={(event) => moveWindow(event, 'project', projectWindow)}
             onPointerUp={(event) => endWindowDrag(event, 'project')}
+            onPointerCancel={(event) => endWindowDrag(event, 'project')}
           >
             <span>CASE_STUDY.exe</span>
             <button
@@ -459,15 +493,21 @@ export function DesktopWorkspace({
       {openFile && (
         <section
           ref={fileWindow}
+          tabIndex={-1}
           className={`window file-window ${openFile === 'contact' ? 'contact-window' : ''} ${focusedWindow === openFile ? 'is-focused' : ''}`}
           aria-labelledby="file-window-title"
+          onFocus={() => setFocusedWindow(openFile)}
           onPointerDown={() => setFocusedWindow(openFile)}
         >
           <header
             className="window-drag-handle"
+            tabIndex={0}
+            aria-label="Window title bar. Use arrow keys to move this window."
+            onKeyDown={moveWindowByKey}
             onPointerDown={(event) => beginWindowDrag(event, openFile)}
             onPointerMove={(event) => moveWindow(event, openFile, fileWindow)}
             onPointerUp={(event) => endWindowDrag(event, openFile)}
+            onPointerCancel={(event) => endWindowDrag(event, openFile)}
           >
             <span>
               {openFile === 'cv'
@@ -487,12 +527,11 @@ export function DesktopWorkspace({
           {openFile === 'cv' ? (
             <div className="window-body file-window-body">
               <h2 id="file-window-title">Darren Potts</h2>
-              <p className="file-window-kicker">Mobile developer · Product builder</p>
               <ResumeContent />
             </div>
           ) : openFile === 'contact' ? (
             <div className="window-body file-window-body contact-window-body">
-              <h2 id="file-window-title">Let’s talk.</h2>
+              <h2 id="file-window-title">Contact</h2>
               <p>
                 Have a mobile product, interesting problem, or collaboration in mind? Send
                 a note and tell me what you are working on. You can also connect on
@@ -550,28 +589,21 @@ export function DesktopWorkspace({
             </div>
           ) : (
             <div className="window-body file-window-body hobbies-document">
-              <h2 id="file-window-title">Outside the build loop.</h2>
-              <p>
-                Time on the mats, out on the trails, and making games keeps me curious
-                beyond the day-to-day build loop.
-              </p>
+              <h2 id="file-window-title">Hobbies</h2>
+              <p>Jiu-jitsu, Muay Thai, mountain biking, and game development.</p>
               <div className="hobby-note">
-                <span>01 / ON THE MATS</span>
                 <strong>Jiu-jitsu</strong>
                 <p>Technique, patience, and steady progress on the mats.</p>
               </div>
               <div className="hobby-note">
-                <span>02 / STRIKING</span>
                 <strong>Muay Thai</strong>
                 <p>Training sharpens focus and keeps me moving.</p>
               </div>
               <div className="hobby-note">
-                <span>03 / OUTSIDE</span>
                 <strong>Mountain biking</strong>
                 <p>Long trails, technical sections, and time outdoors.</p>
               </div>
               <div className="hobby-note">
-                <span>04 / AFTER HOURS</span>
                 <strong>Game development</strong>
                 <p>Building small worlds, mechanics, and playful experiments.</p>
               </div>
@@ -616,6 +648,16 @@ export function DesktopWorkspace({
               </span>
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => {
+              arrangeDesktop();
+              setStartMenuOpen(false);
+            }}
+          >
+            Arrange desktop
+          </button>
+          <MotionToggle />
           <div className="start-menu-footer">
             <button
               type="button"
@@ -654,6 +696,7 @@ export function DesktopWorkspace({
       <footer className="dock taskbar">
         <button
           className={`taskbar-start ${startMenuOpen ? 'active' : ''}`}
+          aria-label="Start"
           type="button"
           aria-expanded={startMenuOpen}
           onClick={() => setStartMenuOpen((open) => !open)}
@@ -669,6 +712,7 @@ export function DesktopWorkspace({
               onClick={() => {
                 setStartOpen(true);
                 setFocusedWindow('welcome');
+                focusWindow(startWindow);
               }}
             >
               WELCOME.txt
@@ -678,7 +722,10 @@ export function DesktopWorkspace({
             <button
               className={focusedWindow === 'project' ? 'active' : ''}
               type="button"
-              onClick={() => setFocusedWindow('project')}
+              onClick={() => {
+                setFocusedWindow('project');
+                focusWindow(projectWindow);
+              }}
             >
               {selected.title}
             </button>
@@ -687,7 +734,10 @@ export function DesktopWorkspace({
             <button
               className={focusedWindow === openFile ? 'active' : ''}
               type="button"
-              onClick={() => setFocusedWindow(openFile)}
+              onClick={() => {
+                setFocusedWindow(openFile);
+                focusWindow(fileWindow);
+              }}
             >
               {openFile === 'cv'
                 ? 'DARREN_POTTS_CV.pdf'
@@ -745,6 +795,7 @@ export function DesktopWorkspace({
       {dogOpen && (
         <section
           ref={dogWindow}
+          tabIndex={-1}
           className="dog-photo-window"
           style={
             {
@@ -753,14 +804,18 @@ export function DesktopWorkspace({
             } as React.CSSProperties
           }
           role="dialog"
-          aria-modal="true"
+          aria-modal="false"
           aria-labelledby="dog-photo-title"
         >
           <header
             className="window-drag-handle"
+            tabIndex={0}
+            aria-label="Window title bar. Use arrow keys to move this window."
+            onKeyDown={moveWindowByKey}
             onPointerDown={(event) => beginWindowDrag(event, 'dog')}
             onPointerMove={(event) => moveWindow(event, 'dog', dogWindow)}
             onPointerUp={(event) => endWindowDrag(event, 'dog')}
+            onPointerCancel={(event) => endWindowDrag(event, 'dog')}
           >
             <span>GOOD_DOG.jpg</span>
             <button
@@ -771,26 +826,11 @@ export function DesktopWorkspace({
               ×
             </button>
           </header>
-          <div className="dog-photo-content">
-            <h2 id="dog-photo-title">My favourite coworker.</h2>
-            {dogPhotoAvailable ? (
-              <img
-                src="/dog.png"
-                alt="Darren’s dog"
-                onError={() => setDogPhotoAvailable(false)}
-              />
-            ) : (
-              <div className="dog-photo-placeholder">
-                <span aria-hidden="true">🐾</span>
-                <strong>Your dog goes here</strong>
-                <p>
-                  Add a photo named <code>dog.png</code> to the project’s{' '}
-                  <code>public</code> folder.
-                </p>
-              </div>
-            )}
-            <small>CHIEF NAP OFFICER · ALWAYS ON PAW-TROL</small>
-          </div>
+          <DogPhoto
+            titleId="dog-photo-title"
+            available={dogPhotoAvailable}
+            onError={() => setDogPhotoAvailable(false)}
+          />
         </section>
       )}
     </main>

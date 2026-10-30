@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   projects,
@@ -15,8 +15,19 @@ import { useDogPet } from './components/desktop/hooks/use-dog-pet';
 import { useSystemStatus } from './components/desktop/hooks/use-system-status';
 import { useWindowDrag } from './components/desktop/hooks/use-window-drag';
 
+import { useProjectNavigation } from './components/desktop/hooks/use-project-navigation';
+import { MotionSettingsProvider } from './components/desktop/motion-settings';
+
 export default function DesktopPortfolio() {
-  const [selected, setSelected] = useState<Project | null>(null);
+  return (
+    <MotionSettingsProvider>
+      <Portfolio />
+    </MotionSettingsProvider>
+  );
+}
+
+function Portfolio() {
+  const { selected, setSelected } = useProjectNavigation();
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('desktop');
   const [benchProject, setBenchProject] = useState(projects[0]);
   const [viewportMode, setViewportMode] = useState<ViewportMode>('phone');
@@ -51,6 +62,16 @@ export default function DesktopPortfolio() {
     mobileUnlocked && !selected && !openFile && workspaceMode === 'desktop',
   );
 
+  useEffect(() => {
+    if (selected) {
+      setMobileUnlocked(true);
+      setMobileScreen(0);
+      setSheetOpen(false);
+      setOpenFile(null);
+      setFocusedWindow('project');
+    }
+  }, [selected?.id]);
+
   function openDogWindow(event: React.MouseEvent<HTMLButtonElement>) {
     const windowWidth = Math.min(420, window.innerWidth - 32);
     const x = Math.max(
@@ -63,7 +84,10 @@ export default function DesktopPortfolio() {
   }
 
   function showMobileScreen(next: number) {
-    const bounded = Math.max(0, Math.min(2, next));
+    const bounded = Math.max(
+      0,
+      Math.min((selected ?? benchProject).screens.length - 1, next),
+    );
     if (bounded === mobileScreen) return;
     setScreenDirection(bounded > mobileScreen ? 1 : -1);
     setMobileScreen(bounded);

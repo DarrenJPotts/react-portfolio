@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import type { Project, ViewportMode, WorkspaceMode } from './data';
+import { ScreenshotImage } from './image-viewer';
+import { useIconDrag } from './hooks/use-window-drag';
 import { RetroFolder } from './retro-effects';
 import { ScreenshotCarousel } from './screenshot-carousel';
 
@@ -23,7 +24,7 @@ export function CaseStudyPreview({ project }: { project: Project }) {
               <span className="laptop-camera" aria-hidden="true" />
               <div className="laptop-screen-content">
                 {project.previewImage ? (
-                  <img
+                  <ScreenshotImage
                     src={project.previewImage}
                     alt={`Screenshot of ${project.title}`}
                   />
@@ -70,7 +71,7 @@ export function CaseStudyPreview({ project }: { project: Project }) {
               <div className="phone-screen-frame">
                 <span className="phone-island" aria-hidden="true" />
                 {project.previewImage ? (
-                  <img
+                  <ScreenshotImage
                     src={project.previewImage}
                     alt={`Screenshot of ${project.title}`}
                   />
@@ -130,52 +131,14 @@ export function DraggableIcon({
   project: Project;
   onOpen: () => void;
 }) {
-  const ref = useRef<HTMLButtonElement>(null);
-  const drag = useRef({ x: 0, y: 0, startX: 0, startY: 0, moved: false });
-
-  function onPointerDown(event: React.PointerEvent<HTMLButtonElement>) {
-    if (matchMedia('(max-width: 760px)').matches || event.button !== 0) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current.startX = event.clientX - drag.current.x;
-    drag.current.startY = event.clientY - drag.current.y;
-    drag.current.moved = false;
-  }
-
-  function onPointerMove(event: React.PointerEvent<HTMLButtonElement>) {
-    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
-    const x = event.clientX - drag.current.startX;
-    const y = event.clientY - drag.current.startY;
-    if (Math.abs(x - drag.current.x) > 3 || Math.abs(y - drag.current.y) > 3)
-      drag.current.moved = true;
-    drag.current.x = x;
-    drag.current.y = y;
-    if (ref.current) ref.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-  }
-
-  function onPointerUp(event: React.PointerEvent<HTMLButtonElement>) {
-    if (event.currentTarget.hasPointerCapture(event.pointerId))
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    if (!drag.current.moved) onOpen();
-  }
-
+  const drag = useIconDrag(onOpen);
   return (
     <button
-      ref={ref}
+      {...drag}
       className="desktop-icon"
       style={project.placement}
       type="button"
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={(event) => {
-        drag.current.moved = true;
-        if (event.currentTarget.hasPointerCapture(event.pointerId))
-          event.currentTarget.releasePointerCapture(event.pointerId);
-      }}
-      onClick={(event) => {
-        if (event.detail === 0) onOpen();
-      }}
-      onDoubleClick={onOpen}
+      title="Open project. Alt + arrow keys move this folder."
     >
       <RetroFolder project={project} />
       <strong>{project.title}</strong>
@@ -195,44 +158,14 @@ export function DraggableFileIcon({
   onOpen: () => void;
   type: string;
 }) {
-  const ref = useRef<HTMLButtonElement>(null);
-  const drag = useRef({ x: 0, y: 0, startX: 0, startY: 0, moved: false });
-
-  function onPointerDown(event: React.PointerEvent<HTMLButtonElement>) {
-    if (matchMedia('(max-width: 760px)').matches || event.button !== 0) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current.startX = event.clientX - drag.current.x;
-    drag.current.startY = event.clientY - drag.current.y;
-    drag.current.moved = false;
-  }
-
-  function onPointerMove(event: React.PointerEvent<HTMLButtonElement>) {
-    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
-    const x = event.clientX - drag.current.startX;
-    const y = event.clientY - drag.current.startY;
-    if (Math.abs(x - drag.current.x) > 3 || Math.abs(y - drag.current.y) > 3)
-      drag.current.moved = true;
-    drag.current.x = x;
-    drag.current.y = y;
-    if (ref.current) ref.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-  }
-
-  function onPointerUp(event: React.PointerEvent<HTMLButtonElement>) {
-    if (event.currentTarget.hasPointerCapture(event.pointerId))
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    if (!drag.current.moved) onOpen();
-  }
-
+  const drag = useIconDrag(onOpen);
   return (
     <button
-      ref={ref}
+      {...drag}
       className={`file-icon ${className}`}
       type="button"
       aria-label={`Open ${label}`}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      title="Open file. Alt + arrow keys move this file."
     >
       <span>{type}</span>
       <strong>{label}</strong>
@@ -305,41 +238,14 @@ export function DeviceBench({
 }
 
 export function AnimatedHeadline({ lines }: { lines: string[] }) {
-  const fullText = lines.join(' ');
-  const [visibleCharacters, setVisibleCharacters] = useState(fullText.length);
-
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setVisibleCharacters(fullText.length);
-      return;
-    }
-
-    setVisibleCharacters(0);
-    let count = 0;
-    const timer = window.setInterval(() => {
-      count += 1;
-      setVisibleCharacters(count);
-      if (count >= fullText.length) window.clearInterval(timer);
-    }, 32);
-
-    return () => window.clearInterval(timer);
-  }, [fullText]);
-
-  let consumedCharacters = 0;
-
   return (
-    <h1 aria-label={fullText}>
-      {lines.map((line, index) => {
-        const remaining = Math.max(0, visibleCharacters - consumedCharacters);
-        const visibleLine = line.slice(0, remaining);
-        consumedCharacters += line.length + 1;
-        return (
-          <span key={`${index}-${line}`} aria-hidden="true">
-            {visibleLine}
-            {index < lines.length - 1 && <br />}
-          </span>
-        );
-      })}
+    <h1 className="animated-headline" aria-label={lines.join(' ')}>
+      {lines.map((line, index) => (
+        <span key={`${index}-${line}`} aria-hidden="true">
+          {line}
+          {index < lines.length - 1 && <br />}
+        </span>
+      ))}
     </h1>
   );
 }

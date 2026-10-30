@@ -8,17 +8,30 @@ export function useSystemStatus() {
   const [time, setTime] = useState('');
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      matchMedia('(max-width: 760px)').matches
+    ) {
       setBootStage('ready');
       return;
     }
 
-    const leaveTimer = window.setTimeout(() => setBootStage('leaving'), 1450);
-    const readyTimer = window.setTimeout(() => setBootStage('ready'), 1780);
+    const preference = matchMedia('(prefers-reduced-motion: reduce)');
+    const stopBoot = () => {
+      if (preference.matches) {
+        window.clearTimeout(leaveTimer);
+        window.clearTimeout(readyTimer);
+        setBootStage('ready');
+      }
+    };
+    preference.addEventListener('change', stopBoot);
+    const leaveTimer = window.setTimeout(() => setBootStage('leaving'), 650);
+    const readyTimer = window.setTimeout(() => setBootStage('ready'), 980);
 
     return () => {
       window.clearTimeout(leaveTimer);
       window.clearTimeout(readyTimer);
+      preference.removeEventListener('change', stopBoot);
     };
   }, []);
 

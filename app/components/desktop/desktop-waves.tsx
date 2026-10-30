@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useMotionSettings } from './motion-settings';
 
 const ShapeWaves = dynamic(() => import('../react-bits/ShapeWaves'), { ssr: false });
 
 export function DesktopWaves() {
+  const { paused } = useMotionSettings();
   const [enabled, setEnabled] = useState(false);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -19,7 +21,7 @@ export function DesktopWaves() {
   }, []);
   return (
     <div className="desktop-waves" aria-hidden="true">
-      {enabled && !failed && (
+      {enabled && !paused && !failed && (
         <ShapeWaves
           shapes="squares"
           cellSize={22}

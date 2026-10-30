@@ -4,6 +4,13 @@
   --grey: #a5a7a1;
   --panel: #d5d6d1;
   --signal: #d9834d;
+  --surface-raised: #353731;
+  --surface-preview: #262824;
+  --border-muted: #74766f;
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-compact: 0.75rem;
+  --space-unit: 4px;
 }
 * {
   box-sizing: border-box;
@@ -2506,9 +2513,7 @@ a {
   }
 
   .desktop {
-    min-height: 100dvh;
-    padding: 0;
-    overflow: hidden;
+    display: none;
   }
 
   .mobile-os {
@@ -2560,7 +2565,7 @@ a {
 
   .mobile-lock::before,
   .mobile-home::before {
-    content: 'MOBILE INTERFACE PRODUCT SYSTEMS PROTOTYPES';
+    content: '';
     position: absolute;
     inset: 16% auto auto -5%;
     width: 110%;
@@ -3111,16 +3116,29 @@ a {
     left: 50%;
     bottom: 10px;
     width: 90px;
-    height: 4px;
+    height: 44px;
     padding: 0;
     border: 0;
-    border-radius: 4px;
-    background: var(--white);
+    background: transparent;
     transform: translateX(-50%);
   }
 
+  .home-indicator::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 8px;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--white);
+  }
   .mobile-project-app {
-    padding-bottom: 200px;
+    height: 100dvh;
+    min-height: 0;
+    padding-bottom: 140px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .mobile-project-title {
@@ -3135,9 +3153,10 @@ a {
 
   .mobile-project-title h2 {
     margin: 0;
-    font-size: clamp(48px, 16vw, 76px);
-    line-height: 0.9;
-    letter-spacing: -0.07em;
+    font-size: clamp(2rem, 12vw, 3.75rem);
+    line-height: 1.05;
+    letter-spacing: -0.045em;
+    overflow-wrap: anywhere;
     text-transform: uppercase;
   }
 
@@ -3251,33 +3270,46 @@ a {
     display: flex;
     justify-content: center;
     gap: 8px;
-    padding: 19px;
+    padding: 4px 19px;
   }
 
   .screen-dots button {
-    width: 26px;
-    height: 3px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: 0;
-    background: #61635e;
+    background: transparent;
+    position: relative;
   }
 
-  .screen-dots button.active {
+  .screen-dots button::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 7px;
+    right: 7px;
+    height: 4px;
+    background: var(--grey);
+  }
+  .screen-dots button.active::after {
     background: var(--white);
   }
 
   .mobile-sheet {
-    position: absolute;
+    position: fixed;
     z-index: 5;
     left: 0;
     right: 0;
     bottom: 0;
-    min-height: 170px;
-    padding: 12px 20px 32px;
+    max-height: calc(100dvh - 70px);
+    display: flex;
+    flex-direction: column;
+    padding: 12px 20px calc(24px + env(safe-area-inset-bottom));
+    overflow: hidden;
     border-top: 2px solid var(--black);
     background: var(--panel);
     color: var(--black);
-    transform: translateY(calc(100% - 105px));
+    transform: translateY(calc(100% - 132px));
     transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
@@ -3285,6 +3317,8 @@ a {
     transform: translateY(0);
   }
   .sheet-handle {
+    flex: none;
+    min-height: 44px;
     width: 100%;
     padding: 0 0 14px;
     border: 0;
@@ -3301,6 +3335,12 @@ a {
     font-size: 9px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+  }
+  .sheet-content {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px 4px 16px;
   }
   .sheet-content > p {
     line-height: 1.5;
@@ -3606,289 +3646,21 @@ a {
 .app-react-bits-carousel .carousel-dot.is-active .carousel-dot-mark {
   background: var(--signal);
 }
-@media (min-width: 761px) {
-  .desktop .project-window {
-    width: min(780px, calc(100% - 40px));
-    height: min(660px, calc(100dvh - 100px));
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-  .project-window > .window-drag-handle {
-    flex: none;
-  }
-  .project-window-grid {
-    flex: 1;
-    min-height: 0;
-    grid-template-columns: 0.9fr 1.1fr;
-    overflow: hidden;
-  }
-  .project-window .case-study-cover {
-    min-height: 0;
-    padding: 18px;
-    gap: 12px;
-    overflow-y: auto;
-  }
-  .project-window .project-copy {
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding: 26px;
-    scrollbar-color: var(--grey) var(--panel);
-    scrollbar-width: thin;
-  }
-  .project-window .case-study-cover-meta strong {
-    font-size: 24px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .app-react-bits-carousel * {
-    transition: none !important;
-    animation: none !important;
-  }
-}
-
-@media (min-width: 761px) {
-  .project-window .case-study-cover {
-    overflow: hidden;
-    height: 100%;
-  }
-  .project-window .project-copy {
-    overflow: hidden;
-    padding: 0;
-    height: 100%;
-  }
-  .project-copy-scroll {
-    height: 100%;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding: 26px;
-    scrollbar-width: thin;
-    scrollbar-color: #74766f var(--panel);
-  }
-  .project-window .case-study-preview {
-    min-height: 0;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .project-window .app-react-bits-carousel {
-    max-width: min(210px, calc((100dvh - 330px) * 0.48));
-  }
-  .project-window .screenshot-caption {
-    height: 4.5em;
-    overflow: hidden;
-    font-size: 10px;
-    line-height: 1.5;
-  }
-}
-
-.retro-carousel-label {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid #74766f;
-  font: 8px monospace;
-  color: var(--grey);
-}
+/* Desktop viewer: one definition of the final split-pane and supplied-phone treatment. */
 .retro-circular-stage {
-  height: 360px;
   width: 100%;
-  border-bottom: 1px solid #74766f;
-  background: #292b27;
-  box-shadow: inset 2px 2px 0 #101110;
+  height: 450px;
 }
-.retro-circular-stage .circular-carousel__photo {
-  object-fit: contain;
-  background: var(--panel);
+.retro-circular-stage .circular-carousel__stage {
+  transform: scale(1.4);
 }
 .retro-circular-stage .circular-carousel:focus-visible {
   outline: 2px solid var(--signal);
   outline-offset: -3px;
 }
-.retro-carousel-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 10px;
-  gap: 8px;
-  font: 9px monospace;
-}
-.retro-carousel-controls button {
-  width: 40px;
-  height: 36px;
-  color: var(--white);
-  background: #353731;
-  border: 1px solid var(--grey);
-  box-shadow:
-    inset 1px 1px #a5a7a1,
-    2px 2px #101110;
-  font-size: 18px;
-}
-.retro-carousel-controls button:active {
-  box-shadow: inset 1px 1px #101110;
-}
-.retro-carousel-controls button:focus-visible {
-  outline: 2px solid var(--signal);
-  outline-offset: 2px;
-}
-@media (min-width: 761px) {
-  .retro-circular-stage {
-    height: clamp(170px, calc(100dvh - 460px), 360px);
-  }
-  .project-window .retro-circular .screenshot-caption {
-    height: 4.5em;
-  }
-}
-
-.desktop-waves {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.055;
-  background-image: radial-gradient(#939b87 1px, transparent 1px);
-  background-size: 22px 22px;
-}
-.desktop > .grain {
-  opacity: 0.12;
-}
-@media (max-width: 760px) {
-  .desktop-waves {
-    display: none;
-  }
-}
-
-/* A full phone bezel is painted on each image before the carousel slices it. */
 .retro-circular-stage .circular-carousel__photo {
-  box-sizing: border-box;
-  border: 6px solid #101110;
-  border-top-width: 12px;
-  border-bottom-width: 11px;
-  border-radius: 20px;
-  background: #101110;
-  outline: 1px solid #a5a7a1;
-  outline-offset: -1px;
+  object-fit: contain;
 }
-.retro-circular-stage {
-  height: 450px;
-}
-@media (min-width: 761px) {
-  .desktop .project-window {
-    height: min(825px, calc(100dvh - 100px));
-  }
-  .retro-circular-stage {
-    height: clamp(212px, calc((100dvh - 460px) * 1.25), 450px);
-  }
-}
-
-.desktop-waves {
-  opacity: 0.12;
-}
-.boot-loader > .desktop-waves {
-  z-index: 0;
-}
-.boot-loader > .boot-grain {
-  opacity: 0.12;
-}
-
-/* Flat, front-facing phones: no curved screenshots or dark rear panels. */
-.retro-circular-stage {
-  background: transparent;
-  box-shadow: none;
-  border: 0;
-}
-.retro-circular-stage .circular-carousel__photo {
-  border: 5px solid #161715;
-  border-top-width: 16px;
-  border-bottom-width: 13px;
-  border-radius: 22px;
-  outline: 1px solid #74766f;
-  outline-offset: -1px;
-  background: #161715;
-}
-.retro-circular-stage .circular-carousel__frame::after {
-  content: '';
-  position: absolute;
-  top: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 32px;
-  height: 5px;
-  background: #080908;
-  border-radius: 5px;
-  pointer-events: none;
-}
-.project-window .retro-circular .screenshot-caption {
-  height: auto;
-  min-height: 20px;
-  margin: 12px 0 0;
-  overflow: visible;
-  text-align: center;
-  font-size: 12px;
-  line-height: 1.5;
-}
-.retro-carousel-label {
-  border: 0;
-  padding-bottom: 14px;
-}
-.retro-carousel-controls {
-  justify-content: center;
-  gap: 20px;
-}
-.retro-circular-stage .circular-carousel:focus-visible {
-  outline: none;
-  box-shadow: inset 0 -2px var(--signal);
-}
-@media (min-width: 761px) {
-  .project-window .case-study-cover {
-    background-image: none;
-    background-color: #262824;
-  }
-}
-
-.retro-circular-stage .circular-carousel__stage {
-  transform: scale(1.4);
-}
-
-@media (min-width: 761px) {
-  .project-window-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .project-window .case-study-cover {
-    gap: 8px;
-    padding: 14px;
-  }
-  .project-window .retro-circular {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-  }
-  .project-window .retro-circular-stage {
-    flex: 1;
-    min-height: 0;
-    height: auto;
-  }
-  .project-window .retro-circular .retro-carousel-label {
-    flex: none;
-    padding: 6px 0 8px;
-  }
-  .project-window .retro-circular .retro-carousel-controls {
-    flex: none;
-    padding-top: 8px;
-  }
-  .project-window .retro-circular .screenshot-caption {
-    flex: none;
-    margin-top: 8px;
-  }
-  .project-window .case-study-cover-meta {
-    flex: none;
-  }
-}
-
 .retro-circular-stage .supplied-iphone {
   border: 0;
   border-radius: 0;
@@ -3911,53 +3683,92 @@ a {
   height: 95%;
   border-radius: 12% / 6%;
   object-fit: contain;
-  background: #fff;
+  background: var(--white);
   pointer-events: none;
-}
-.supplied-iphone-camera {
-  clip-path: inset(3.4% 35.5% 92.4% 35.5%);
-}
-.retro-circular-stage .circular-carousel__frame::after {
-  display: none;
+  image-rendering: auto;
 }
 .supplied-iphone-camera {
   clip-path: inset(3.4% 35.5% 92.4% 35.5% round 999px);
 }
-
-/* Rasterize phones near source resolution, then downsample into the preview. */
-.supplied-iphone-screen {
-  image-rendering: auto;
+.retro-circular-stage .circular-carousel__frame::after {
+  display: none;
 }
-
+.retro-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding-top: 8px;
+  font-size: var(--text-compact);
+  font-variant-numeric: tabular-nums;
+}
+.retro-carousel-controls button {
+  width: 44px;
+  height: 44px;
+  color: var(--white);
+  background: var(--surface-raised);
+  border: 1px solid var(--grey);
+  box-shadow:
+    inset 1px 1px var(--grey),
+    2px 2px var(--black);
+  font-size: 18px;
+}
+.retro-carousel-controls button:active {
+  box-shadow: inset 1px 1px var(--black);
+}
+.retro-carousel-controls button:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+.project-window .retro-circular .screenshot-caption {
+  flex: none;
+  width: 100%;
+  max-width: none;
+  align-self: center;
+  min-height: 20px;
+  margin: 8px 0 0;
+  overflow: visible;
+  text-align: center;
+  font-size: var(--text-compact);
+  line-height: 1.5;
+}
+.desktop-waves {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image: radial-gradient(#939b87 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.desktop > .grain,
+.boot-loader > .boot-grain {
+  opacity: 0.12;
+}
+.boot-loader > .desktop-waves {
+  z-index: 0;
+}
 .taskbar-socials {
   display: flex;
   align-items: center;
   gap: 2px;
   padding-right: 8px;
-  border-right: 1px solid #74766f;
+  border-right: 1px solid var(--border-muted);
 }
 .taskbar-socials a {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   color: var(--black);
 }
 .taskbar-socials a:hover {
   background: rgb(16 17 16 / 0.1);
-  box-shadow:
-    inset 1px 1px #fff,
-    inset -1px -1px #74766f;
 }
 .taskbar-socials a:focus-visible {
   outline: 2px solid var(--black);
   outline-offset: -2px;
 }
-.taskbar-socials a:active {
-  box-shadow: inset 1px 1px #74766f;
-}
-
-/* Long project names and URLs must fit inside their pane. */
 .project-window-grid > * {
   min-width: 0;
 }
@@ -3970,8 +3781,9 @@ a {
   max-width: 100%;
   white-space: normal;
   overflow-wrap: anywhere;
-  font-size: clamp(30px, 3.2vw, 48px);
-  line-height: 1.05;
+  font-size: clamp(1.875rem, 3.2vw, 3rem);
+  line-height: 1.08;
+  text-wrap: balance;
 }
 .case-study-cover-meta strong {
   max-width: 100%;
@@ -3980,4 +3792,401 @@ a {
 }
 .project-copy-scroll dl div {
   grid-template-columns: 70px minmax(0, 1fr);
+}
+@media (min-width: 761px) {
+  .desktop .project-window {
+    width: min(820px, calc(100% - 40px));
+    height: min(825px, calc(100dvh - 100px));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .project-window > .window-drag-handle {
+    flex: none;
+  }
+  .project-window-grid {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .project-window .case-study-cover {
+    min-height: 0;
+    height: 100%;
+    padding: 14px;
+    gap: 8px;
+    overflow: hidden;
+    background-image: none;
+    background-color: var(--surface-preview);
+  }
+  .project-window .project-copy {
+    min-height: 0;
+    height: 100%;
+    padding: 0;
+    overflow: hidden;
+  }
+  .project-copy-scroll {
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 26px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-muted) var(--panel);
+  }
+  .project-window .case-study-preview {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .project-window .retro-circular {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+  .project-window .retro-circular-stage {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+  .project-window .retro-carousel-controls,
+  .project-window .case-study-cover-meta {
+    flex: none;
+  }
+  .project-window .case-study-cover-meta strong {
+    font-size: 1.5rem;
+  }
+  .project-window .app-react-bits-carousel {
+    max-width: min(210px, calc((100dvh - 400px) * 0.48));
+  }
+}
+
+/* Shared interaction and reading roles. */
+.desktop-icon,
+.file-icon {
+  transform: translate3d(var(--icon-x, 0px), var(--icon-y, 0px), 0);
+}
+.window-drag-handle {
+  touch-action: none;
+}
+.window-drag-handle:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: -3px;
+}
+.status-bar,
+.taskbar-tray,
+.mobile-status {
+  font-variant-numeric: tabular-nums;
+}
+.project-copy-scroll > p {
+  max-width: 65ch;
+  font-size: var(--text-body);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.project-copy-scroll .project-role {
+  font-size: var(--text-small);
+}
+.project-copy dt,
+.project-copy dd,
+.case-study-screens,
+.project-data-note,
+.case-study-cover-meta small,
+.file-window-body,
+.taskbar-windows button,
+.desktop-icon small,
+.file-icon strong {
+  font-size: var(--text-compact);
+  line-height: 1.5;
+}
+.case-study-screens p {
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+.window > header,
+.start-menu small {
+  font-size: var(--text-compact);
+  letter-spacing: 0;
+}
+.file-window-body p {
+  font-size: var(--text-body);
+  line-height: 1.55;
+}
+.contact-message-form input,
+.contact-message-form textarea {
+  font-size: 1rem;
+}
+.desktop-icon strong {
+  font-size: var(--text-small);
+}
+.case-study-cover-meta small {
+  letter-spacing: 0;
+  text-transform: none;
+}
+.motion-toggle {
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font-size: var(--text-compact);
+}
+.portfolio-surfaces[data-motion-paused] *,
+.portfolio-surfaces[data-motion-paused] *::before,
+.portfolio-surfaces[data-motion-paused] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+.portfolio-dialog {
+  position: fixed;
+  padding: 0;
+  width: min(900px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+  border: 2px solid var(--white);
+  background: var(--panel);
+  color: var(--black);
+  box-shadow: 12px 14px 0 rgb(0 0 0 / 0.4);
+}
+.portfolio-dialog::backdrop {
+  background: rgb(0 0 0 / 0.8);
+}
+.portfolio-dialog > header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 16px;
+  background: var(--black);
+  color: var(--white);
+}
+.portfolio-dialog > header strong {
+  font-size: var(--text-small);
+  overflow-wrap: anywhere;
+}
+.portfolio-dialog button {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font-size: 1.25rem;
+}
+.portfolio-dialog :focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: -3px;
+}
+.image-viewer-content {
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 20px;
+}
+.image-viewer-content p {
+  margin-top: 0;
+  max-width: 65ch;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+.image-viewer-content a {
+  display: inline-block;
+  margin-bottom: 16px;
+  text-decoration: underline;
+  line-height: 1.5;
+}
+.image-viewer-content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.image-error {
+  padding: 24px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.screenshot-open {
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+.screenshot-open > span {
+  display: block;
+  text-decoration: underline;
+  text-transform: none;
+}
+@media (max-width: 760px) {
+  .desktop-waves {
+    display: none;
+  }
+  .mobile-status,
+  .mobile-status button,
+  .app-grid strong,
+  .mobile-dock small,
+  .mobile-widget span,
+  .mobile-widget small,
+  .sheet-handle span,
+  .sheet-content dt,
+  .mobile-screen small,
+  .mobile-screen span,
+  .mobile-project-title p {
+    font-size: var(--text-compact);
+    letter-spacing: 0;
+  }
+  .mobile-status button {
+    min-height: 44px;
+  }
+  .mobile-status .motion-toggle {
+    border: 0;
+  }
+  .mobile-project-title {
+    padding: 20px 20px 16px;
+  }
+  .mobile-screen {
+    min-height: 0;
+    padding: 14px;
+  }
+  .mobile-screen-shot {
+    margin: 0;
+  }
+  .mobile-screen-shot img {
+    max-height: max(180px, calc(100dvh - 390px));
+  }
+  .mobile-screen-shot figcaption {
+    font-size: var(--text-small);
+    line-height: 1.5;
+  }
+  .mobile-screen-shot figcaption span {
+    text-transform: none;
+  }
+  .sheet-content {
+    font-size: var(--text-body);
+    line-height: 1.55;
+  }
+  .sheet-content dd {
+    font-size: var(--text-small);
+  }
+  .mobile-document-body {
+    font-size: var(--text-body);
+  }
+  .mobile-project-app:has(.mobile-sheet.open) > .home-indicator {
+    display: none;
+  }
+  .mobile-dock,
+  .home-indicator {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+  .portfolio-dialog {
+    width: calc(100% - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+  .portfolio-dialog .mobile-dog-window {
+    width: 100%;
+    border: 0;
+    box-shadow: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .pixel-window-reveal {
+    display: none;
+  }
+}
+@media (forced-colors: active), (prefers-reduced-motion: reduce) {
+  .custom-cursor {
+    display: none;
+  }
+  .desktop,
+  .desktop button,
+  .desktop a {
+    cursor: auto;
+  }
+  .desktop .window-drag-handle {
+    cursor: move;
+  }
+}
+
+.portfolio-surfaces[data-motion-paused] .pixel-window-reveal {
+  display: none;
+}
+
+.animated-headline {
+  animation: headline-reveal 700ms steps(24, end) both;
+}
+@keyframes headline-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+@media (max-width: 760px) {
+  .app-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 360px;
+  }
+  .app-grid strong {
+    white-space: normal;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+  .screenshot-open img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+}
+
+@media (max-width: 760px) {
+  .animated-headline {
+    animation: none;
+  }
+}
+
+.file-window-body .resume-content,
+.mobile-document-body .resume-content,
+.resume-content li {
+  font-size: var(--text-small);
+  line-height: 1.55;
+}
+.mobile-document-body .resume-profile {
+  font-size: var(--text-body);
+}
+.contact-detail-list > a > span {
+  font-size: var(--text-compact);
+}
+.mobile-contact-links {
+  font-size: var(--text-small);
+}
+
+.status-bar,
+.taskbar-start strong,
+.identity > span {
+  font-size: var(--text-compact);
+}
+
+.dog-dev-note {
+  margin: 0 0 16px;
+  font-size: var(--text-small);
+  line-height: 1.55;
+}
+.portfolio-dialog:has(> .dog-photo-content) {
+  width: min(420px, calc(100% - 24px));
+}
+.portfolio-dialog > .dog-photo-content {
+  max-height: calc(100dvh - 90px);
 }

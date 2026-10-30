@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMotionSettings } from './motion-settings';
 import type { Project } from './data';
 import Carousel from '../react-bits/Carousel';
 import CircularCarousel from '../react-bits/CircularCarousel';
@@ -19,6 +20,7 @@ export function ScreenshotCarousel({ project }: { project: Project }) {
       })),
     [screens, project.title],
   );
+  const { paused } = useMotionSettings();
   const [index, setIndex] = useState(0);
   const [reduce, setReduce] = useState(false);
   const root = useRef<HTMLElement>(null);
@@ -44,7 +46,7 @@ export function ScreenshotCarousel({ project }: { project: Project }) {
       className="screenshot-carousel retro-circular"
       aria-label={`${project.title} screenshots`}
     >
-      {reduce ? (
+      {reduce || paused ? (
         <Carousel
           items={items.map((item) => ({ image: item.src, alt: item.alt }))}
           baseWidth="100%"

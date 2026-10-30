@@ -8,14 +8,18 @@ import type { Project } from './data';
 // https://reactbits.dev/animations/pixel-transition
 // Decorative only: the parent button owns all keyboard and drag interactions.
 export function RetroFolder({ project }: { project: Project }) {
+  const screenshots = project.screens.filter((screen) => screen.image);
+  const cards = screenshots.length
+    ? screenshots.slice(0, 3)
+    : project.screens.slice(0, 1);
   return (
     <span className="folder retro-folder" aria-hidden="true">
       <span className="retro-folder-pages">
-        {project.screens.slice(0, 3).map((screen, index) => (
+        {cards.map((screen, index) => (
           <span
             className="retro-folder-page"
             key={screen.label}
-            style={{ '--page-index': index } as CSSProperties}
+            style={{ '--page-index': index + (3 - cards.length) / 2 } as CSSProperties}
           >
             {screen.image ? (
               <img src={screen.image} alt="" draggable={false} />

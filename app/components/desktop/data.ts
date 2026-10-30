@@ -75,6 +75,7 @@ export const projects: Project[] = [
   },
   {
     id: 'handyman',
+    previewImage: '/handyman-home.png',
     title: 'Handyman.co.za',
     kind: 'Service business website',
     year: '2026',
@@ -87,7 +88,11 @@ export const projects: Project[] = [
     sourceUrl: 'https://github.com/DarrenJPotts/Handyman.co.za-react',
     stack: ['React', 'Responsive UI', 'Service enquiries'],
     screens: [
-      { label: 'Home', caption: 'Introduce the business and its home repair services.' },
+      {
+        label: 'Home',
+        caption: 'Introduce the business and its home repair services.',
+        image: '/handyman-home.png',
+      },
       {
         label: 'Services',
         caption: 'Help visitors explore repairs, installations, and maintenance.',

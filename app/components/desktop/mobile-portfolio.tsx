@@ -1,3 +1,8 @@
+import { DogPhoto } from './dog-photo';
+import { useEffect, useRef, useState } from 'react';
+import { useSurfaceFocus } from './hooks/use-surface-focus';
+import { ImageViewer, Modal, ScreenshotImage } from './image-viewer';
+import { MotionToggle } from './motion-settings';
 import type {
   Dispatch,
   MutableRefObject,
@@ -89,10 +94,38 @@ export function MobilePortfolio({
   openProject,
   setMobileScreen,
 }: MobilePortfolioProps) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const media = matchMedia('(max-width: 760px)');
+    const sync = () => setIsMobile(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
   const activeScreen = selected?.screens[mobileScreen];
+  const surface = useRef<HTMLElement>(null);
+  const [imageOpen, setImageOpen] = useState(false);
+  useEffect(() => setImageOpen(false), [selected?.id, mobileScreen]);
+  useSurfaceFocus(
+    surface,
+    openFile ?? selected?.id ?? null,
+    selected ? `[data-project-id="${selected.id}"]` : '.mobile-dock button',
+  );
 
   return (
-    <section className="mobile-os" aria-label="Mobile portfolio">
+    <section
+      ref={surface}
+      className="mobile-os"
+      aria-label="Mobile portfolio"
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape' || event.defaultPrevented) return;
+        if (dogOpen) setDogOpen(false);
+        else if (switcherOpen) setSwitcherOpen(false);
+        else if (sheetOpen) setSheetOpen(false);
+        else if (openFile) setOpenFile(null);
+        else if (selected) setSelected(null);
+      }}
+    >
       {openFile && mobileUnlocked ? (
         <div className="mobile-project-app mobile-document-app">
           <header className="mobile-status">
@@ -102,13 +135,12 @@ export function MobilePortfolio({
             <span>{time}</span>
           </header>
           <div className="mobile-project-title">
-            <p>DOCUMENT / {openFile.toUpperCase()}</p>
             <h2>
               {openFile === 'cv'
                 ? 'Darren Potts'
                 : openFile === 'contact'
-                  ? 'Let’s talk.'
-                  : 'Outside the build loop.'}
+                  ? 'Contact'
+                  : 'Hobbies'}
             </h2>
           </div>
           <div className="mobile-document-body">
@@ -137,27 +169,20 @@ export function MobilePortfolio({
               </>
             ) : (
               <>
-                <p>
-                  Time on the mats, out on the trails, and making games keeps me curious
-                  beyond the day-to-day build loop.
-                </p>
+                <p>Jiu-jitsu, Muay Thai, mountain biking, and game development.</p>
                 <div className="hobby-note">
-                  <span>01 / ON THE MATS</span>
                   <strong>Jiu-jitsu</strong>
                   <p>Technique, patience, and steady progress on the mats.</p>
                 </div>
                 <div className="hobby-note">
-                  <span>02 / STRIKING</span>
                   <strong>Muay Thai</strong>
                   <p>Training sharpens focus and keeps me moving.</p>
                 </div>
                 <div className="hobby-note">
-                  <span>03 / OUTSIDE</span>
                   <strong>Mountain biking</strong>
                   <p>Long trails, technical sections, and time outdoors.</p>
                 </div>
                 <div className="hobby-note">
-                  <span>04 / AFTER HOURS</span>
                   <strong>Game development</strong>
                   <p>Building small worlds, mechanics, and playful experiments.</p>
                 </div>
@@ -210,10 +235,18 @@ export function MobilePortfolio({
             >
               {activeScreen?.image ? (
                 <figure className="mobile-screen-shot">
-                  <img
-                    src={activeScreen.image}
-                    alt={`${selected.title} ${activeScreen.label} screen`}
-                  />
+                  <button
+                    className="screenshot-open"
+                    type="button"
+                    onClick={() => setImageOpen(true)}
+                    aria-label={`Enlarge ${activeScreen.label} screenshot`}
+                  >
+                    <ScreenshotImage
+                      src={activeScreen.image}
+                      alt={`${selected.title} ${activeScreen.label} screen`}
+                    />
+                    <span>View full size</span>
+                  </button>
                   <figcaption>
                     <small>{activeScreen.label}</small>
                     <span>{activeScreen.caption}</span>
@@ -243,12 +276,14 @@ export function MobilePortfolio({
                 className={index === mobileScreen ? 'active' : ''}
                 onClick={() => showMobileScreen(index)}
                 aria-label={`Show ${screen.label} screen`}
+                aria-current={index === mobileScreen ? 'true' : undefined}
               />
             ))}
           </div>
           <section className={`mobile-sheet ${sheetOpen ? 'open' : ''}`}>
             <button
               className="sheet-handle"
+              aria-controls="mobile-project-notes"
               type="button"
               onClick={() => setSheetOpen((open) => !open)}
               aria-expanded={sheetOpen}
@@ -256,7 +291,12 @@ export function MobilePortfolio({
               <i />
               <span>{sheetOpen ? 'Hide project notes' : 'View project notes'}</span>
             </button>
-            <div className="sheet-content">
+            <div
+              className="sheet-content"
+              id="mobile-project-notes"
+              tabIndex={sheetOpen ? 0 : -1}
+              inert={!sheetOpen}
+            >
               <p>{selected.summary}</p>
               <p>{selected.role}</p>
               <dl>
@@ -447,6 +487,7 @@ export function MobilePortfolio({
                 className={index === mobileScreen ? 'active' : ''}
                 onClick={() => showMobileScreen(index)}
                 aria-label={`Show ${screen.label} screen`}
+                aria-current={index === mobileScreen ? 'true' : undefined}
               />
             ))}
           </div>
@@ -461,7 +502,7 @@ export function MobilePortfolio({
         <div className="mobile-home">
           <header className="mobile-status">
             <span>{time}</span>
-            <span>DP_OS · ONLINE</span>
+            <MotionToggle />
           </header>
           <div className="mobile-identity">
             <p>DARREN POTTS</p>
@@ -471,6 +512,7 @@ export function MobilePortfolio({
             {projects.map((project, index) => (
               <button
                 key={project.id}
+                data-project-id={project.id}
                 type="button"
                 onClick={() => {
                   openProject(project);
@@ -543,7 +585,6 @@ export function MobilePortfolio({
                       setSwitcherOpen(false);
                     }}
                   >
-                    <span>PROJECT_VIEWER</span>
                     <strong>{project.title}</strong>
                     <small>{project.summary}</small>
                   </button>
@@ -551,48 +592,24 @@ export function MobilePortfolio({
               </div>
             </div>
           )}
-          {dogOpen && (
-            <div
-              className="mobile-dog-overlay"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="mobile-dog-title"
-            >
-              <section className="mobile-dog-window">
-                <header>
-                  <span>GOOD_DOG.jpg</span>
-                  <button
-                    type="button"
-                    onClick={() => setDogOpen(false)}
-                    aria-label="Close dog photo"
-                  >
-                    ×
-                  </button>
-                </header>
-                <div className="dog-photo-content">
-                  <h2 id="mobile-dog-title">My favourite coworker.</h2>
-                  {dogPhotoAvailable ? (
-                    <img
-                      src="/dog.png"
-                      alt="Darren’s dog"
-                      onError={() => setDogPhotoAvailable(false)}
-                    />
-                  ) : (
-                    <div className="dog-photo-placeholder">
-                      <span aria-hidden="true">🐾</span>
-                      <strong>Your dog goes here</strong>
-                      <p>
-                        Add a photo named <code>dog.png</code> to the project’s{' '}
-                        <code>public</code> folder.
-                      </p>
-                    </div>
-                  )}
-                  <small>CHIEF NAP OFFICER · ALWAYS ON PAW-TROL</small>
-                </div>
-              </section>
-            </div>
+          {dogOpen && isMobile && (
+            <Modal title="Dog photo" onClose={() => setDogOpen(false)}>
+              <DogPhoto
+                titleId="mobile-dog-title"
+                available={dogPhotoAvailable}
+                onError={() => setDogPhotoAvailable(false)}
+              />
+            </Modal>
           )}
         </div>
+      )}
+      {imageOpen && selected && activeScreen?.image && (
+        <ImageViewer
+          src={activeScreen.image}
+          title={`${selected.title}: ${activeScreen.label}`}
+          caption={activeScreen.caption}
+          onClose={() => setImageOpen(false)}
+        />
       )}
     </section>
   );
